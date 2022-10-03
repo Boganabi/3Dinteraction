@@ -17,20 +17,52 @@
         type="text/css" />
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="css/styles.css" rel="stylesheet" />
+    <!-- <script type="module" src="./node_modules/three/src/Three.js"></script> -->
+
 </head>
 
 <body >
+    <!-- <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            requirejs(["./node_modules/three/src/Three.js"], function (Three) {
+                const headerEl = document.getElementById("header");
+                // headerEl.textContent = lodash.upperCase("hello world");
+            });
+        });
+    </script> -->
 
-  
-
-    <!-- Bootstrap core JS-->
+    <!-- Bootstrap core JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
+    
     <script type="module" src="/index.js"></script>
 
-    <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
-</body>
+    <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script> 
 
+    <div id='left' style='text-align: left;'>
+        <div style='display: inline-block; vertical-align: top;'>
+            <p id='nameID'>Current selected object: </p>
+        </div>
+    </div> 
+
+    <div id='wrapper' style='text-align: center;'>
+        <div style='display: inline-block; vertical-align: top;'>
+            <!-- <input type = "button" onclick = "test()" value = "Change this to image1 later"> -->
+            <!-- <button onclick="loadModel(True)">This can be image1 later</button> -->
+            <button id="switchModel">First Model</button>
+        </div>
+        <div style='display: inline-block; vertical-align: top;'>
+            <!-- <input type = "button" onclick = "loadModel(false)" value = "Change this to image2 later"> -->
+            <!-- <button onclick="loadModel(False)">This can be image2 later</button> -->
+            <button id="switchModel2">Second Model</button>
+        </div>
+        <div style='display: inline-block; vertical-align: top;'>
+            <!-- <input type = "button" onclick = "loadModel(false)" value = "Change this to image2 later"> -->
+            <!-- <button onclick="loadModel(False)">This can be image2 later</button> -->
+            <button id="switchModel3">Third Model</button>
+        </div>
+    </div>
+
+</body>
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 
