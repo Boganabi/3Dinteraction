@@ -1,28 +1,28 @@
-import * as THREE from './node_modules/three/src/Three.js';
- import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls'
-import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DragControls } from 'three/examples/jsm/controls/DragControls'
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
-var raycaster = new THREE.Raycaster();
+const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.setSize( window.innerWidth, window.innerHeight - 72 ); // 72 being the height of the top bar
 document.body.appendChild( renderer.domElement );
 
 scene.background = new THREE.Color( 0xd3d3d3 );
 
 const pairList = []; 
 const objects = []; // list of all loaded objects in the scene
-const loadedObjs = [];  // booleans checking if those objects are loaded
+// const loadedObjs = [];  // booleans checking if those objects are loaded
 
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshBasicMaterial( { color: 0x444400 } );
-const cube = new THREE.Mesh( geometry, material );
+// const geometry = new THREE.BoxGeometry();
+// const material = new THREE.MeshBasicMaterial( { color: 0x444400 } );
+// const cube = new THREE.Mesh( geometry, material );
 
 const gltfLoader = new GLTFLoader();
 
@@ -45,63 +45,123 @@ var rot = {
 }
 
 var model;
-var mesh;
+// var mesh;
 var dot;
 
-const btn1 = document.getElementById("switchModel");
-btn1.addEventListener("click", function () { loadModel(0) });
+let isTyping = false;
 
-const btn2 = document.getElementById("switchModel2");
-btn2.addEventListener("click", function () { loadModel(1) });
+const sideb = document.getElementById("sideboi");
+const mainpage = document.getElementById("main");
 
-const btn3 = document.getElementById("switchModel3");
-btn3.addEventListener("click", function () { loadModel(2) });
+const openButton = document.getElementById("openBtn");
+openButton.addEventListener("click", function() {
+    sideb.style.width = "250px";
+    mainpage.style.marginLeft = "250px";
+    isTyping = true;
+});
+
+const closeButton = document.getElementById("closeBtn");
+closeButton.addEventListener("click", function() {
+    sideb.style.width = "0";
+    mainpage.style.marginLeft = "0";
+    isTyping = false;
+});
+
+// const btn1 = document.getElementById("switchModel");
+// btn1.addEventListener("click", function () { loadModel(0) });
+
+// const btn2 = document.getElementById("switchModel2");
+// btn2.addEventListener("click", function () { loadModel(1) });
+
+// const btn3 = document.getElementById("switchModel3");
+// btn3.addEventListener("click", function () { loadModel(2) });
 
 var editText = document.getElementById("nameID");
 
-// fix so that key presses work on last selected, and objects are toggleable
-function loadModel(n){
-    var url;
-    if(n === 0 && !loadedObjs[0]) {
-        url = '/fancyskull.glb';
-        loadedObjs[0] = !loadedObjs[0];
-    } 
-    if(n === 1 && !loadedObjs[1]) {
-        url = '/Skull test 2.glb';
-        loadedObjs[1] = !loadedObjs[1];
-    }
-    if(n === 2 && !loadedObjs[2]) {
-        url = '/Skull test 3.glb';
-        loadedObjs[2] = !loadedObjs[2];
-    }
+const url = '/fancyskull.glb';
 
-    if(!url){
-        return; // in case the object we want to spawn is invalid for some reason
+gltfLoader.load(url, (gltf) => {
+    model = gltf.scene;
+    // model.side = THREE.MeshLambertMaterial;
+    // model.material = new THREE.MeshPhongMaterial({
+    //     color:      0xFFFFFF,
+    //     specular:   0xFFFBF2,
+    //     shininess:  60,
+    //     map:        THREE.Texture,
+    //     side:       THREE.DoubleSide
+    // });
+    model.material = new THREE.ShadowMaterial({opacity: .3, color: 0xFFFFFF});
+    // mesh = model.material;
+    scene.add(model);
+    for(var i = 0; i < model.children.length; i++){
+        objects.push(model.children[i]);
+        const objPair = new Object();
+        objPair.model = model.children[i];
+        objPair.name = "Object " + (pairList.length + 1); 
+        pairList.push(objPair);
     }
+    const dragControls = new DragControls([model], camera, renderer.domElement);
+
+    // fill the sidebar with names of each object
+    let listElements = document.getElementById("elements");
+    pairList.forEach((item) => {
+        let li = document.createElement("li");
+        li.setAttribute("contenteditable", true);
+        li.innerText = item.name;
+        li.addEventListener("click", function () { isTyping = true; });
+        li.addEventListener("input", function () {
+            // TODO: update name in array
+
+        })
+        listElements.appendChild(li);
+    });
+    
+})
+
+// fix so that key presses work on last selected, and objects are toggleable
+// function loadModel(n){
+    // var url;
+    // if(n === 0 && !loadedObjs[0]) {
+    //     url = '/fancyskull.glb';
+    //     loadedObjs[0] = !loadedObjs[0];
+    // } 
+    // these are commented for now
+    // if(n === 1 && !loadedObjs[1]) {
+    //     url = '/Skull test 2.glb';
+    //     loadedObjs[1] = !loadedObjs[1];
+    // }
+    // if(n === 2 && !loadedObjs[2]) {
+    //     url = '/Skull test 3.glb';
+    //     loadedObjs[2] = !loadedObjs[2];
+    // }
+
+    // if(!url){
+    //     return; // in case the object we want to spawn is invalid for some reason
+    // }
     // may need to have array of objects later
-    gltfLoader.load(url, (gltf) => {
-        model = gltf.scene;
-        // model.side = THREE.MeshLambertMaterial;
-        // model.material = new THREE.MeshPhongMaterial({
-        //     color:      0xFFFFFF,
-        //     specular:   0xFFFBF2,
-        //     shininess:  60,
-        //     map:        THREE.Texture,
-        //     side:       THREE.DoubleSide
-        // });
-        model.material = new THREE.ShadowMaterial({opacity: .3, color: 0xFFFFFF});
-        mesh = model.material;
-        scene.add(model);
-        for(var i = 0; i < model.children.length; i++){
-            objects.push(model.children[i]);
-            const objPair = new Object();
-            objPair.model = model.children[i];
-            objPair.name = "Object " + (pairList.length + 1); 
-            pairList.push(objPair);
-        }
-        const dragControls = new DragControls([model], camera, renderer.domElement);
-    })
-}
+    // gltfLoader.load(url, (gltf) => {
+    //     model = gltf.scene;
+    //     // model.side = THREE.MeshLambertMaterial;
+    //     // model.material = new THREE.MeshPhongMaterial({
+    //     //     color:      0xFFFFFF,
+    //     //     specular:   0xFFFBF2,
+    //     //     shininess:  60,
+    //     //     map:        THREE.Texture,
+    //     //     side:       THREE.DoubleSide
+    //     // });
+    //     model.material = new THREE.ShadowMaterial({opacity: .3, color: 0xFFFFFF});
+    //     mesh = model.material;
+    //     scene.add(model);
+    //     for(var i = 0; i < model.children.length; i++){
+    //         objects.push(model.children[i]);
+    //         const objPair = new Object();
+    //         objPair.model = model.children[i];
+    //         objPair.name = "Object " + (pairList.length + 1); 
+    //         pairList.push(objPair);
+    //     }
+    //     const dragControls = new DragControls([model], camera, renderer.domElement);
+    // })
+// }
 
 function loadSpheres(){
     dot = new THREE.Mesh( new THREE.SphereGeometry(), new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
@@ -150,89 +210,108 @@ camera.position.z = 5;
 // maybe try to use right click to drag later?
 function keyPressed(e){
     
-	switch(e.key) {
-        case 'Enter':
-            if(scene.autoRotate){
-                controls.enabled = true;
-                scene.autoRotate = false;
-                //load last rotation so that we can return to it
-                scene.rotation.x = rot.x;
-                scene.rotation.y = rot.y;
-                scene.rotation.z = rot.z;
-            } else {
-                scene.autoRotate = true;
-                controls.enabled = false;
-                //save rotation so that when its stopped it goes back to old coordinates
-                rot = {
-                    'x': scene.rotation.x,
-                    'y': scene.rotation.y,
-                    'z': scene.rotation.z
+    if(!isTyping){
+        switch(e.key) {
+            case 'Enter':
+                if(scene.autoRotate){
+                    controls.enabled = true;
+                    scene.autoRotate = false;
+                    //load last rotation so that we can return to it
+                    scene.rotation.x = rot.x;
+                    scene.rotation.y = rot.y;
+                    scene.rotation.z = rot.z;
+                } else {
+                    scene.autoRotate = true;
+                    controls.enabled = false;
+                    //save rotation so that when its stopped it goes back to old coordinates
+                    rot = {
+                        'x': scene.rotation.x,
+                        'y': scene.rotation.y,
+                        'z': scene.rotation.z
+                    }
                 }
-            }
-            break;
-        case 'i':
-            model.rotateX(-0.1);
-            break;
-        case 'k':
-            model.rotateX(0.1);
-            break;
-        case 'j':
-            model.rotateY(-0.1);
-            break;
-        case 'l':
-            model.rotateY(0.1);
-            break;
-        case 'u':
-            model.rotation.z -= 0.1;
-            break;
-        case 'o':
-            model.rotation.z += 0.1;
-            break;
-        case 'w':
-            model.position.z -= 0.1;
-            break;
-        case 's':
-            model.position.z += 0.1;
-            break;
-        case 'a':
-            model.position.x -= 0.1;
-            break;
-        case 'd':
-            model.position.x += 0.1;
-            break;
-        case 'q':
-            model.position.y -= 0.1;
-            break;
-        case 'e':
-            model.position.y += 0.1;
-            break;
-        case 'n':
-            controls.zoomIn();
-            break;
-        case 'm':
-            controls.zoomOut();
-            break;
-        case 'Tab':
-            // detect if out of range first
-            var mInd = findModelIndex(model);
-            if(e.shiftKey && mInd - 1 >= 0){
-                model = objects[mInd - 1];
-            }
-            else if(!e.shiftKey && mInd + 1 < objects.length){
-                model = objects[mInd + 1];
-            }
-            updateObjName(model);
-            break;
-	}
-	e.preventDefault();
+                break;
+            case 'i':
+                model.rotateX(-0.1);
+                break;
+            case 'k':
+                model.rotateX(0.1);
+                break;
+            case 'j':
+                model.rotateY(-0.1);
+                break;
+            case 'l':
+                model.rotateY(0.1);
+                break;
+            case 'u':
+                //model.rotation.z -= 0.1;
+                model.rotateZ(-0.1)
+                break;
+            case 'o':
+                //model.rotation.z += 0.1;
+                model.rotateZ(0.1)
+                break;
+            case 'w':
+                model.position.z -= 0.1;
+                break;
+            case 's':
+                model.position.z += 0.1;
+                break;
+            case 'a':
+                model.position.x -= 0.1;
+                break;
+            case 'd':
+                model.position.x += 0.1;
+                break;
+            case 'q':
+                model.position.y -= 0.1;
+                break;
+            case 'e':
+                model.position.y += 0.1;
+                break;
+            case 'n':
+                controls.zoomIn();
+                break;
+            case 'm':
+                controls.zoomOut();
+                break;
+            case 'ArrowUp':
+                scene.rotateX(0.1)
+                break;
+            case 'ArrowDown':
+                scene.rotateX(-0.1)
+                break;
+            case 'ArrowLeft':
+                scene.rotateY(-0.1);
+                break;
+            case 'ArrowRight':
+                scene.rotateY(0.1);
+                break;
+            case 'Tab':
+                // detect if out of range first
+                var mInd = findModelIndex(model);
+                if(e.shiftKey && mInd - 1 >= 0){
+                    model = objects[mInd - 1];
+                }
+                else if(!e.shiftKey && mInd + 1 < objects.length){
+                    model = objects[mInd + 1];
+                }
+                updateObjName(model);
+                break;
+        }
+        // e.preventDefault();
+    }
 }
 
-document.body.addEventListener('keydown', keyPressed);
-document.body.addEventListener('click', onDocumentMouseDown);
+// document.body.addEventListener('keydown', keyPressed);
+// document.body.addEventListener('click', onDocumentMouseDown);
+renderer.domElement.addEventListener('click', onDocumentMouseDown);
+renderer.domElement.addEventListener('keydown', keyPressed);
 
 // get the last clicked element
 function onDocumentMouseDown( event ) {
-// https://stackoverflow.com/questions/26250810/three-js-get-object-name-with-mouse-click
+    isTyping = false;
+    // https://stackoverflow.com/questions/26250810/three-js-get-object-name-with-mouse-click
     // console.log("start func");
     // var getMeshes = function(parents) {
     //     var meshes = [];
@@ -313,6 +392,16 @@ function onDocumentMouseDown( event ) {
 
     updateObjName(model);
 
+    // close dropdown menu when clicked off of
+    // if(!event.target.matches('.dropbtn')) {
+    //     var dropdowns = document.getElementsByClassName("dropdown-content");
+    //     for( var i = 0; i < dropdowns.length; i++ ) {
+    //         var openDropdown = dropdowns[i];
+    //         if (openDropdown.classList.contains('show')) {
+    //             openDropdown.classList.remove('show');
+    //         }
+    //     }
+    // }
 }
 
 function checkLocationRange( obj1, obj2, range ){
@@ -364,7 +453,7 @@ function resizeCanvasToDisplaySize() {
   
       // update any render target sizes here
     }
-  }
+}
 
 const animate = function () {
     requestAnimationFrame( animate );
@@ -381,5 +470,3 @@ const animate = function () {
 };
 
 animate();
-
-
