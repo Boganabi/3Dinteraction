@@ -1,0 +1,89 @@
+body {
+    background-color: #0080ff;
+}
+
+h1 {
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* button styles */
+.btn {
+    font-size: 15px;
+    cursor: pointer;
+    background-color: #3498DB;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+}
+
+.btn:hover {
+    background-color: #4982a8;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.card {
+    /* add shadows */
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    padding: 16px;
+    text-align: center;
+    background-color: #f1f1f1;
+    transition: 0.3s;
+    border-radius: 5px; /* rounded corners */
+    flex-grow: 1;
+    margin: 10px;
+    
+}
+
+/* make deeper shadow on mouseover */
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    background-color: #f1f1f1ab;
+}
+
+.container {
+    padding: 2px 16px;
+    cursor: pointer;
+}
+
+img {
+    border-radius: 5px 5px 0 0;
+}
+
+/* float 4 columns side by side */
+.column {
+    float: left;
+    width: 25%;
+    padding: 0 10px;
+    height: 150px;
+}
+
+.row {
+    margin: 0 -5px; /* remove extra left and right margins due to column padding */
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    flex-basis: 33.3333%;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* responsive columns, so smaller screens can squish them to smaller sizes */
+@media screen and (max-width: 600px) {
+    .column {
+        width: 100%;
+        display: block;
+        margin-bottom: 20px;
+    }
+
+    .row {
+        display: initial !important;
+    }
+}

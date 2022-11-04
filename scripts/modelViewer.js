@@ -18,6 +18,7 @@ scene.background = new THREE.Color( 0xd3d3d3 );
 
 const pairList = []; 
 const objects = []; // list of all loaded objects in the scene
+const lmlem = []; // list of li elements for the sidebar
 // const loadedObjs = [];  // booleans checking if those objects are loaded
 
 // const geometry = new THREE.BoxGeometry();
@@ -67,6 +68,11 @@ closeButton.addEventListener("click", function() {
     isTyping = false;
 });
 
+const backButton = document.getElementById("backBtn");
+backButton.addEventListener("click", function () {
+    window.location.href = "index.html";
+});
+
 // const btn1 = document.getElementById("switchModel");
 // btn1.addEventListener("click", function () { loadModel(0) });
 
@@ -78,7 +84,7 @@ closeButton.addEventListener("click", function() {
 
 var editText = document.getElementById("nameID");
 
-const url = '/fancyskull.glb';
+const url = '/models/fancyskull.glb';
 
 gltfLoader.load(url, (gltf) => {
     model = gltf.scene;
@@ -92,6 +98,9 @@ gltfLoader.load(url, (gltf) => {
     // });
     model.material = new THREE.ShadowMaterial({opacity: .3, color: 0xFFFFFF});
     // mesh = model.material;
+
+    // let listElements = document.getElementById("elements");
+
     scene.add(model);
     for(var i = 0; i < model.children.length; i++){
         objects.push(model.children[i]);
@@ -109,13 +118,13 @@ gltfLoader.load(url, (gltf) => {
         li.setAttribute("contenteditable", true);
         li.innerText = item.name;
         li.addEventListener("click", function () { isTyping = true; });
-        li.addEventListener("input", function () {
-            // TODO: update name in array
-
-        })
         listElements.appendChild(li);
+        lmlem.push(li);
+        li.addEventListener("input", function () { 
+            pairList[findIndex(lmlem, li)].name = li.innerText; 
+            // make text bold too
+        })
     });
-    
 })
 
 // fix so that key presses work on last selected, and objects are toggleable
@@ -392,6 +401,13 @@ function onDocumentMouseDown( event ) {
 
     updateObjName(model);
 
+    // unbold all other text areas
+    lmlem.forEach(element => {
+        element.style.fontWeight = "normal";
+    });
+    // make text bold when object is selected
+    lmlem[findModelIndex(model)].style.fontWeight = "bold";
+
     // close dropdown menu when clicked off of
     // if(!event.target.matches('.dropbtn')) {
     //     var dropdowns = document.getElementsByClassName("dropdown-content");
@@ -453,6 +469,16 @@ function resizeCanvasToDisplaySize() {
   
       // update any render target sizes here
     }
+}
+
+function findIndex(arr, obj){
+    for (var i = 0; i < arr.length; i++){
+        if (arr[i] === obj){
+            console.log("found at " + i);
+            return i;
+        }
+    }
+    console.log("failed to find index");
 }
 
 const animate = function () {
