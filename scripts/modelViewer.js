@@ -1,7 +1,12 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { DragControls } from 'three/examples/jsm/controls/DragControls'
+import * as THREE from "https://cdn.skypack.dev/three@0.132.2";
+import { OrbitControls } from "https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/GLTFLoader.js";
+import { DragControls } from "https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/DragControls.js";
+
+// import * as THREE from '/scripts/node_modules/three';
+// import { OrbitControls } from '/scripts/node_modules/three/examples/jsm/controls/OrbitControls'
+// import { GLTFLoader } from '/scripts/node_modules/three/examples/jsm/loaders/GLTFLoader';
+// import { DragControls } from '/scripts/node_modules/three/examples/jsm/controls/DragControls'
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -84,48 +89,70 @@ backButton.addEventListener("click", function () {
 
 var editText = document.getElementById("nameID");
 
-const url = '/models/fancyskull.glb';
-
-gltfLoader.load(url, (gltf) => {
-    model = gltf.scene;
-    // model.side = THREE.MeshLambertMaterial;
-    // model.material = new THREE.MeshPhongMaterial({
-    //     color:      0xFFFFFF,
-    //     specular:   0xFFFBF2,
-    //     shininess:  60,
-    //     map:        THREE.Texture,
-    //     side:       THREE.DoubleSide
-    // });
-    model.material = new THREE.ShadowMaterial({opacity: .3, color: 0xFFFFFF});
-    // mesh = model.material;
-
-    // let listElements = document.getElementById("elements");
-
-    scene.add(model);
-    for(var i = 0; i < model.children.length; i++){
-        objects.push(model.children[i]);
-        const objPair = new Object();
-        objPair.model = model.children[i];
-        objPair.name = "Object " + (pairList.length + 1); 
-        pairList.push(objPair);
+// since we passed in parameter for model name, now we extract the name and load it
+// im using an array just in case we want to add more parameters later
+var queryString = new Array();
+var modelName = "";
+window.onload = function (){
+    if (queryString.length == 0){
+        if (window.location.search.split('?').length > 1) {
+            var params = window.location.search.split('?')[1].split('&');
+            for (var i = 0; i < params.length; i++) {
+                var key = params[i].split('=')[0];
+                var value = decodeURIComponent(params[i].split('=')[1]);
+                queryString[key] = value;
+            }
+        }
     }
-    const dragControls = new DragControls([model], camera, renderer.domElement);
+    // check if we have a valid name passed, and print it
+    if(queryString["name"] != null){
+        modelName = queryString["name"];
+        console.log(modelName);
 
-    // fill the sidebar with names of each object
-    let listElements = document.getElementById("elements");
-    pairList.forEach((item) => {
-        let li = document.createElement("li");
-        li.setAttribute("contenteditable", true);
-        li.innerText = item.name;
-        li.addEventListener("click", function () { isTyping = true; });
-        listElements.appendChild(li);
-        lmlem.push(li);
-        li.addEventListener("input", function () { 
-            pairList[findIndex(lmlem, li)].name = li.innerText; 
-            // make text bold too
+        const url = '/models/' + modelName + '.glb';
+
+        gltfLoader.load(url, (gltf) => {
+            model = gltf.scene;
+            // model.side = THREE.MeshLambertMaterial;
+            // model.material = new THREE.MeshPhongMaterial({
+            //     color:      0xFFFFFF,
+            //     specular:   0xFFFBF2,
+            //     shininess:  60,
+            //     map:        THREE.Texture,
+            //     side:       THREE.DoubleSide
+            // });
+            model.material = new THREE.ShadowMaterial({opacity: .3, color: 0xFFFFFF});
+            // mesh = model.material;
+
+            // let listElements = document.getElementById("elements");
+
+            scene.add(model);
+            for(var i = 0; i < model.children.length; i++){
+                objects.push(model.children[i]);
+                const objPair = new Object();
+                objPair.model = model.children[i];
+                objPair.name = "Object " + (pairList.length + 1); 
+                pairList.push(objPair);
+            }
+            const dragControls = new DragControls([model], camera, renderer.domElement);
+
+            // fill the sidebar with names of each object
+            let listElements = document.getElementById("elements");
+            pairList.forEach((item) => {
+                let li = document.createElement("li");
+                li.setAttribute("contenteditable", true);
+                li.innerText = item.name;
+                li.addEventListener("click", function () { isTyping = true; });
+                listElements.appendChild(li);
+                lmlem.push(li);
+                li.addEventListener("input", function () { 
+                    pairList[findIndex(lmlem, li)].name = li.innerText; 
+                    // make text bold too
+                })
+            });
         })
-    });
-})
+    }
+}
 
 // fix so that key presses work on last selected, and objects are toggleable
 // function loadModel(n){

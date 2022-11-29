@@ -14,6 +14,7 @@
   "dependencies": {
     "babylonjs": "^5.29.0",
     "gh-pages": "^3.2.3",
+    "pg": "^8.8.0",
     "three": "^0.128.0",
     "three-ziploader": "^0.0.1"
   }

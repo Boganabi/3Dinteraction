@@ -32,7 +32,9 @@ h1 {
     text-align: center;
     background-color: #f1f1f1;
     transition: 0.3s;
-    border-radius: 5px; /* rounded corners */    
+    border-radius: 5px; /* rounded corners */
+    height: 200px;
+    width: 200px;
 }
 
 /* make deeper shadow on mouseover */
@@ -53,23 +55,16 @@ img {
 /* float 4 columns side by side */
 .column {
     float: left;
-    width: 25%;
+    width: 33%;
     padding: 0 10px;
-    height: 150px;
-}
-
-.row {
-    margin: 0 -5px; /* remove extra left and right margins due to column padding */
+    height: 225px;
     display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    flex-basis: 33.3333%;
 }
 
-.row:after {
-    content: "";
-    display: table;
-    clear: both;
+.something {
+    width: 50%;
+    margin: auto;
+    padding: 10px;
 }
 
 /* responsive columns, so smaller screens can squish them to smaller sizes */
