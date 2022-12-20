@@ -12,8 +12,10 @@
     "vite": "^2.3.0"
   },
   "dependencies": {
+    "axios": "^1.2.1",
     "babylonjs": "^5.29.0",
     "gh-pages": "^3.2.3",
+    "gltf-pipeline": "^3.0.5",
     "pg": "^8.8.0",
     "three": "^0.128.0",
     "three-ziploader": "^0.0.1"

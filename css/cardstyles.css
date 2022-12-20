@@ -79,3 +79,32 @@ img {
         display: initial !important;
     }
 }
+
+input[type="file"] {
+    position: absolute;
+    left: 0;
+    opacity: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+.fileUpload {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(243, 243, 243);
+    border: 3px dotted #bebebe;
+    border-radius: 10px;
+}
+
+label {
+    display: inline-block;
+    position: relative;
+    height: 100px;
+    width: 400px;
+}

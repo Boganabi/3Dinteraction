@@ -1,12 +1,8 @@
-import * as THREE from "https://cdn.skypack.dev/three@0.132.2";
-import { OrbitControls } from "https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/OrbitControls.js";
-import { GLTFLoader } from "https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/GLTFLoader.js";
-import { DragControls } from "https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/DragControls.js";
 
-// import * as THREE from '/scripts/node_modules/three';
-// import { OrbitControls } from '/scripts/node_modules/three/examples/jsm/controls/OrbitControls'
-// import { GLTFLoader } from '/scripts/node_modules/three/examples/jsm/loaders/GLTFLoader';
-// import { DragControls } from '/scripts/node_modules/three/examples/jsm/controls/DragControls'
+import * as THREE from '/scripts/node_modules/three';
+import { OrbitControls } from '/scripts/node_modules/three/examples/jsm/controls/OrbitControls'
+import { GLTFLoader } from '/scripts/node_modules/three/examples/jsm/loaders/GLTFLoader';
+import { DragControls } from '/scripts/node_modules/three/examples/jsm/controls/DragControls'
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -21,18 +17,13 @@ document.body.appendChild( renderer.domElement );
 
 scene.background = new THREE.Color( 0xd3d3d3 );
 
-const pairList = []; 
-const objects = []; // list of all loaded objects in the scene
-const lmlem = []; // list of li elements for the sidebar
-// const loadedObjs = [];  // booleans checking if those objects are loaded
-
-// const geometry = new THREE.BoxGeometry();
-// const material = new THREE.MeshBasicMaterial( { color: 0x444400 } );
-// const cube = new THREE.Mesh( geometry, material );
+var pairList = []; 
+var objects = []; // list of all loaded objects in the scene
+var lmlem = []; // list of li elements for the sidebar
 
 const gltfLoader = new GLTFLoader();
+const jsonLoader = new THREE.ObjectLoader();
 
-// const controls = createControls(camera, renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.mouseButtons = {
@@ -50,8 +41,6 @@ var rot = {
     'z': 0
 }
 
-var model;
-// var mesh;
 var dot;
 
 let isTyping = false;
@@ -75,24 +64,31 @@ closeButton.addEventListener("click", function() {
 
 const backButton = document.getElementById("backBtn");
 backButton.addEventListener("click", function () {
+    // clear lists and remove last model
+    if(model != null){
+        scene.children.forEach((part, i) => {
+            if(i > 1){
+                scene.remove(part);
+                console.log("removed");
+            }
+            console.log("iterate");
+        });
+        document.getElementById("elements").innerHTML = "";
+        objects.length = 0;
+        lmlem.length = 0;
+        pairList.length = 0;
+    }
     window.location.href = "index.html";
 });
 
-// const btn1 = document.getElementById("switchModel");
-// btn1.addEventListener("click", function () { loadModel(0) });
-
-// const btn2 = document.getElementById("switchModel2");
-// btn2.addEventListener("click", function () { loadModel(1) });
-
-// const btn3 = document.getElementById("switchModel3");
-// btn3.addEventListener("click", function () { loadModel(2) });
-
 var editText = document.getElementById("nameID");
+
+var model;
 
 // since we passed in parameter for model name, now we extract the name and load it
 // im using an array just in case we want to add more parameters later
 var queryString = new Array();
-var modelName = "";
+
 window.onload = function (){
     if (queryString.length == 0){
         if (window.location.search.split('?').length > 1) {
@@ -104,100 +100,86 @@ window.onload = function (){
             }
         }
     }
-    // check if we have a valid name passed, and print it
-    if(queryString["name"] != null){
-        modelName = queryString["name"];
-        console.log(modelName);
+    // check if we have a valid file extension passed, and print it
+    if(queryString["id"] != null){
+        const idURL = queryString["id"];
+        // obtain file from database
 
-        const url = '/models/' + modelName + '.glb';
+        // in the database: model, name of model, author, potentially png?
 
-        gltfLoader.load(url, (gltf) => {
-            model = gltf.scene;
-            // model.side = THREE.MeshLambertMaterial;
-            // model.material = new THREE.MeshPhongMaterial({
-            //     color:      0xFFFFFF,
-            //     specular:   0xFFFBF2,
-            //     shininess:  60,
-            //     map:        THREE.Texture,
-            //     side:       THREE.DoubleSide
-            // });
-            model.material = new THREE.ShadowMaterial({opacity: .3, color: 0xFFFFFF});
-            // mesh = model.material;
-
-            // let listElements = document.getElementById("elements");
-
-            scene.add(model);
-            for(var i = 0; i < model.children.length; i++){
-                objects.push(model.children[i]);
-                const objPair = new Object();
-                objPair.model = model.children[i];
-                objPair.name = "Object " + (pairList.length + 1); 
-                pairList.push(objPair);
-            }
-            const dragControls = new DragControls([model], camera, renderer.domElement);
-
-            // fill the sidebar with names of each object
-            let listElements = document.getElementById("elements");
-            pairList.forEach((item) => {
-                let li = document.createElement("li");
-                li.setAttribute("contenteditable", true);
-                li.innerText = item.name;
-                li.addEventListener("click", function () { isTyping = true; });
-                listElements.appendChild(li);
-                lmlem.push(li);
-                li.addEventListener("input", function () { 
-                    pairList[findIndex(lmlem, li)].name = li.innerText; 
-                    // make text bold too
-                })
+        // make GET request to local server
+        // it says axios is not defined but it is defined in our html file
+        axios({
+            method: 'get',
+            url: 'http://localhost:8000/testdata',
+        })
+        .then(function (response) {
+            // handle success
+            console.log(response.data[idURL].filecall);
+            const newURL = "/" + response.data[idURL].filecall;
+            
+            gltfLoader.load(newURL, (gltf) => {
+                model = gltf.scene;
+                scene.add(model);
+                finalizeLoad(model);
             });
         })
+        .catch(function (error) {
+            // handle error
+            console.log("There was an error from Axios: \n" + error);
+        })
+        .then(function () {
+            // always executed
+        })
     }
+    else{
+        const fileObtained = sessionStorage.getItem("json");
+        if(fileObtained) {
+            console.log(fileObtained);
+            const bytes = new TextEncoder().encode(fileObtained);
+            const blob = new Blob([bytes], { type: "application/json" });
+            const newURL = URL.createObjectURL(blob);
+            console.log(newURL);
+            loadModel(newURL);
+        }
+    }
+    
 }
 
-// fix so that key presses work on last selected, and objects are toggleable
-// function loadModel(n){
-    // var url;
-    // if(n === 0 && !loadedObjs[0]) {
-    //     url = '/fancyskull.glb';
-    //     loadedObjs[0] = !loadedObjs[0];
-    // } 
-    // these are commented for now
-    // if(n === 1 && !loadedObjs[1]) {
-    //     url = '/Skull test 2.glb';
-    //     loadedObjs[1] = !loadedObjs[1];
-    // }
-    // if(n === 2 && !loadedObjs[2]) {
-    //     url = '/Skull test 3.glb';
-    //     loadedObjs[2] = !loadedObjs[2];
-    // }
+function loadModel(filepath){
+    jsonLoader.load(filepath, (jsonModel) => {
+        model = jsonModel;
+        scene.add(model);
+        finalizeLoad(model);
+    });  
+}
 
-    // if(!url){
-    //     return; // in case the object we want to spawn is invalid for some reason
-    // }
-    // may need to have array of objects later
-    // gltfLoader.load(url, (gltf) => {
-    //     model = gltf.scene;
-    //     // model.side = THREE.MeshLambertMaterial;
-    //     // model.material = new THREE.MeshPhongMaterial({
-    //     //     color:      0xFFFFFF,
-    //     //     specular:   0xFFFBF2,
-    //     //     shininess:  60,
-    //     //     map:        THREE.Texture,
-    //     //     side:       THREE.DoubleSide
-    //     // });
-    //     model.material = new THREE.ShadowMaterial({opacity: .3, color: 0xFFFFFF});
-    //     mesh = model.material;
-    //     scene.add(model);
-    //     for(var i = 0; i < model.children.length; i++){
-    //         objects.push(model.children[i]);
-    //         const objPair = new Object();
-    //         objPair.model = model.children[i];
-    //         objPair.name = "Object " + (pairList.length + 1); 
-    //         pairList.push(objPair);
-    //     }
-    //     const dragControls = new DragControls([model], camera, renderer.domElement);
-    // })
-// }
+function finalizeLoad(model){
+    // update object lists
+    console.log(model.children.length);
+    for(var i = 0; i < model.children.length; i++){
+        objects.push(model.children[i]);
+        const objPair = new Object();
+        objPair.model = model.children[i];
+        objPair.name = "Object " + (pairList.length + 1); 
+        pairList.push(objPair);
+    }
+    const dragControls = new DragControls([model], camera, renderer.domElement);
+
+    // fill the sidebar with names of each object
+    let listElements = document.getElementById("elements");
+    pairList.forEach((item) => {
+        let li = document.createElement("li");
+        li.setAttribute("contenteditable", true);
+        li.innerText = item.name;
+        li.addEventListener("click", function () { isTyping = true; });
+        listElements.appendChild(li);
+        lmlem.push(li);
+        li.addEventListener("input", function () { 
+            pairList[findIndex(lmlem, li)].name = li.innerText; 
+        })
+    });
+}
 
 function loadSpheres(){
     dot = new THREE.Mesh( new THREE.SphereGeometry(), new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
@@ -243,9 +225,8 @@ scene.add(frontLight);
 
 camera.position.z = 5;
 
-// maybe try to use right click to drag later?
 function keyPressed(e){
-    
+    console.log("xd");
     if(!isTyping){
         switch(e.key) {
             case 'Enter':
@@ -280,11 +261,9 @@ function keyPressed(e){
                 model.rotateY(0.1);
                 break;
             case 'u':
-                //model.rotation.z -= 0.1;
                 model.rotateZ(-0.1)
                 break;
             case 'o':
-                //model.rotation.z += 0.1;
                 model.rotateZ(0.1)
                 break;
             case 'w':
@@ -335,95 +314,41 @@ function keyPressed(e){
                 updateObjName(model);
                 break;
         }
-        // e.preventDefault();
+        e.preventDefault();
     }
 }
 
-// document.body.addEventListener('keydown', keyPressed);
-// document.body.addEventListener('click', onDocumentMouseDown);
 renderer.domElement.addEventListener('click', onDocumentMouseDown);
-renderer.domElement.addEventListener('keydown', keyPressed);
+
+window.addEventListener('keydown', keyPressed);
 
 // get the last clicked element
 function onDocumentMouseDown( event ) {
     isTyping = false;
-    // https://stackoverflow.com/questions/26250810/three-js-get-object-name-with-mouse-click
-    // console.log("start func");
-    // var getMeshes = function(parents) {
-    //     var meshes = [];
-    //     console.log("length: " + parents.length)
-    //     for (var i = 0; i < parents.length; i++) 
-    //     {
-    //         console.log("instance of: " + parents[i].type)
-    //         // console.log("instance check: " + parents[i].geometry)
-    //         if (parents[i].children.length > 0) {
-    //             meshes = meshes.concat(getMeshes(parents[i].children));
-                
-    //             console.log(getMeshes(parents[i].children))
-    //             console.log("more parents plz")
-    //         } else if (parents[i] instanceof THREE.Mesh) {
-    //             console.log("it's a mesh!")
-    //             meshes.push(parents[i]);
-    //         }
-    //     }
-    //     console.log("end loop");
-    //     return meshes;
-    // };
-    // function attributeValues(o) 
-    // {
-    //     var out = [];
-    //     for (var key in o) {
-    //         if (!o.hasOwnProperty(key))
-    //             continue;
-    //             out.push(o[key]);
-    //     }
-    //     return out;
-    // }
-    // var objects = attributeValues(this.o3dByEntityId);
-    // var meshes = getMeshes(scene.children);
-    const index = 6;
-    console.log("length: " + scene.children[index].children.length)
-    for(let i = 0; i < scene.children[index].children.length; i++){
-        console.log("type of number " + i + ": " + scene.children[index].children[i].geometry);
-    }
-
-    // console.log(meshes);
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-    // var canvasBounds = scene.rendererModelling.domElement.getBoundingClientRect();
-    // mouse.x = (event.clientX - canvasBounds.left / (canvasBounds.right - canvasBounds.left )) * 2 - 1;
-    // mouse.y = - (event.clientY - canvasBounds.top / (canvasBounds.bottom - canvasBounds.top )) * 2 + 1;
+
     raycaster.setFromCamera(mouse, camera);
-
-    // const camInverseProjection = new THREE.Matrix4().getInverse(this.camera.projectionMatrix);
-    // const cameraPosition = new THREE.Vector3().applyMatrix4(camInverseProjection);
-    // const mousePosition = new THREE.Vector3(mouse.x, mouse.y, 1).applyMatrix4(camInverseProjection);
-    // const viewDirection = mousePosition.clone().sub(cameraPosition).normalize();
-
-    // this.raycaster.set(cameraPosition, viewDirection);
     
-    const intersects = raycaster.intersectObjects(scene.children[6].children, true);
+    var intersects;
 
-    // console.log("detecting: " + scene.children[2].children);
-    // console.log("intersects: " + intersects);
+    if(scene.children[6]){
+        intersects = raycaster.intersectObjects(scene.children[6].children, true);
+    }
+    else{
+        intersects = raycaster.intersectObjects(scene.children, true);
+    }
+
     if (intersects.length > 0) {
         console.log('clicked :o');
-        // let n = new THREE.Vector3();
-        // n.copy(intersects[0].face.normal);
-        // n.transformDirection(intersects[0].object.matrixWorld);
         model = intersects[0].object;
-        console.log("type of obj: " + model.geometry);
         console.log("x: " + model.position.x + " y: " + model.position.y + " z: " + model.position.z);
     }
 
     //check for locking in
     if (checkLocationRange(model, dot, 0.5)){
-        // model.position.x = dot.position.x;
-        // model.position.y = dot.position.y;
-        // model.position.z = dot.position.z;
         model.position.set(0,0,0);
-        // console.log("fired");
     }
 
     updateObjName(model);
@@ -432,19 +357,12 @@ function onDocumentMouseDown( event ) {
     lmlem.forEach(element => {
         element.style.fontWeight = "normal";
     });
+
+    console.log(model.children.length);
+    console.log(lmlem[findModelIndex(model)]);
+    console.log(model);
     // make text bold when object is selected
     lmlem[findModelIndex(model)].style.fontWeight = "bold";
-
-    // close dropdown menu when clicked off of
-    // if(!event.target.matches('.dropbtn')) {
-    //     var dropdowns = document.getElementsByClassName("dropdown-content");
-    //     for( var i = 0; i < dropdowns.length; i++ ) {
-    //         var openDropdown = dropdowns[i];
-    //         if (openDropdown.classList.contains('show')) {
-    //             openDropdown.classList.remove('show');
-    //         }
-    //     }
-    // }
 }
 
 function checkLocationRange( obj1, obj2, range ){

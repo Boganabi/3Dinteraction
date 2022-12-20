@@ -8,42 +8,26 @@
         <meta name="author" content="" />
         <title>Model Selector</title>
         <link rel="stylesheet" href="css/cardstyles.css">
-        <!-- <script data-main="scripts/index" src = "scripts/require.js"></script> -->
     </head>
 
     <body>
+        
 
         <script type="module" src="./scripts/index.js" defer></script>
 
-        <!-- <input type="button" class="btn" id="model1" value="Model" onclick="location.href='modelViewer.html'"/> -->
         <div style="text-align: center;">
             <h1>Models</h1>
+            <br>
+            <label for = "test">
+                <div class="fileUpload">Click or drop a file here!</div>
+                <input id="file-upload" type="file" name="file"/>
+            </label>
+            <p id="filename"></p>
         </div>
 
         <div class="something">
             <ul id="cards" style="list-style: none;">
-                <!-- <li class="row">
-                    <div class="column">
-                        <div class="card" id="cardSelection">
-                            <img src="img_avatar.png" alt="avatar" style="width:100%">
-                            <div class="container">
-                                <h4><b>Name1</b></h4>
-                                <p>Description1</p>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-                <li class="row">
-                    <div class="column">
-                        <div class="card" id="cardSelection">
-                            <img src="img_avatar.png" alt="avatar" style="width:100%">
-                            <div class="container">
-                                <h4><b>Name3</b></h4>
-                                <p>Description3</p>
-                            </div>
-                        </div>
-                    </div>
-                </li> -->
+                
             </ul>
         </div>
 

@@ -21,14 +21,6 @@
 
     <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 
-    <script type="importmap">
-    {
-        "imports": {
-        "three": "https://unpkg.com/three@<version>/build/three.module.js"
-        }
-    }
-    </script>
-
 </head>
 
 <body >
@@ -39,39 +31,20 @@
         <div id="sideboi" class="sidebar">
             <a href="javascript:void(0)" class="closebtn" id="closeBtn">&times;</a>
             <ul id="elements"></ul>
-            <!-- <a href="#">test1</a>
-            <a href="#">test2</a>
-            <a href="#">test3</a>
-            <a href="#">test4</a> -->
         </div>
-        
-        <!-- <h2>Collapsed Sidebar</h2>
-        <p>Content...</p> -->
-
-        <!-- <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                requirejs(["./node_modules/three/src/Three.js"], function (Three) {
-                    const headerEl = document.getElementById("header");
-                    // headerEl.textContent = lodash.upperCase("hello world");
-                });
-            });
-        </script> -->
         
         <!-- Bootstrap core JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         
         <script type="module" src="./scripts/modelViewer.js"></script>
 
         <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script> 
 
-        <!-- <div id='left' style='text-align: left;'>
-                   
-        </div>
-    -->
         <div id='wrapper' style='text-align: left;'>
             <div style='display: inline-block; vertical-align: top'>
-                <!-- <button class="openbtn" onclick="openNav()">&#9776; Open Sidebar</button> -->
-                <button class="openbtn" id="openBtn">&#9776; Open Sidebar</button>
+                <button class="openbtn" id="openBtn">&#9776; Scene Objects</button>
             </div>
 
             <div style='display: inline-block; vertical-align: top;'>
@@ -85,49 +58,8 @@
             <div style='display: inline-block; vertical-align: top'>
                 <button class="openbtn" id="backBtn">&#8592; Back</button>
             </div>
-            
-            <!-- <div style='display: inline-block; vertical-align: top;'>
-                <button id="switchModel" class="inline-btn">Load Model</button>
-            </div> -->
-            <!-- <div style='display: inline-block; vertical-align: top;'>
-                <button id="switchModel2">Second Model</button>
-            </div>
-            <div style='display: inline-block; vertical-align: top;'>
-                <button id="switchModel3">Third Model</button>
-            </div> -->
-            <!-- <div style='display: inline-block; vertical-align: top'>
-                <div class="dropdown">
-                    <button onclick="dropFunc()" class="dropbtn">Dropdown</button>
-                    <div id="nameDropdown" class="dropdown-content">
-                        !--the stuff for the dropdown goes here as a list, done in js
-                        <a href="#">test1</a>
-                        <a href="#">test2</a>
-                        <a href="#">test3</a>
-                    </div>
-                </div>
-            </div> -->
         </div>
     </div>
-
-<script>
-    // handle dropdown
-    // function dropFunc() {
-    //     document.getElementById("nameDropdown").classList.toggle("show");
-    // }
-
-    // set width of sidebar to 250px and left margin of page accordingly
-    // function openNav() {
-    //     document.getElementById("sideboi").style.width = "250px";
-    //     document.getElementById("main").style.marginLeft = "250px";
-    // }
-
-    // set the width of the sidebar to 0 and left margin accordingly
-    // function closeNav() {
-    //     document.getElementById("sideboi").style.width = "0";
-    //     document.getElementById("main").style.marginLeft = "0";
-    // }
-
-</script>
 
 </body>
 <!-- Latest compiled and minified CSS -->
