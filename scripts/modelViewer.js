@@ -1,29 +1,111 @@
 
+// import the modules listed below
 import * as THREE from '/scripts/node_modules/three';
 import { OrbitControls } from '/scripts/node_modules/three/examples/jsm/controls/OrbitControls'
 import { GLTFLoader } from '/scripts/node_modules/three/examples/jsm/loaders/GLTFLoader';
 import { DragControls } from '/scripts/node_modules/three/examples/jsm/controls/DragControls'
 
+// create scene and camera
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
+//initialize raycaster (for click detecting) and mouse coordinates
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
+// create renderer and define size of 3d viewer
 const renderer = new THREE.WebGLRenderer();
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize( window.innerWidth, window.innerHeight - 72 ); // 72 being the height of the top bar
 document.body.appendChild( renderer.domElement );
 
-scene.background = new THREE.Color( 0xd3d3d3 );
+// set color of background
+const params = {
+    color: '#ffffff'
+}
+scene.background = new THREE.Color( params.color );
+const gui = new dat.GUI();
+gui.addColor(params, 'color').onChange(function(value) {
+    scene.background.set(value);
+});
 
+// decide whether bright static lighting should be used
+const useStaticLighting = false;
+
+// handle lighting
+if (useStaticLighting) {
+    // create colors for the light
+    const color = 0xEBDCC7;
+    const castColor = 0xEBDCC7;
+
+    // the actual light variable
+    const directionalLight = new THREE.DirectionalLight( color, 3 ); // 0xFAEBD7, 0x404040 20
+
+    // shadow of the regular light
+    var light2 = directionalLight.clone();
+    directionalLight.castShadow = true;
+    light2.castShadow = false;
+    directionalLight.intensity = 3;
+    light2.intensity = 0.5;
+
+    scene.add( directionalLight );
+
+    // add lights from every direction
+    const bottomLight = new THREE.DirectionalLight( color, 1 );
+    bottomLight.position.set(0, -10, 0);
+    scene.add(bottomLight);
+
+    const leftLight = new THREE.DirectionalLight( castColor, 1 );
+    leftLight.position.set(-10, 0, 0);
+    scene.add(leftLight);
+
+    const rightLight = new THREE.DirectionalLight( castColor, 1 );
+    rightLight.position.set(10, 0, 0);
+    scene.add(rightLight);
+
+    const frontLight = new THREE.DirectionalLight( color, 1 );
+    frontLight.position.set(0, 0, 10);
+    scene.add(frontLight);
+}
+else {
+    // helper function to change lighting color
+    class ColorGUIHelper {
+        constructor(object, prop) {
+            this.object = object;
+            this.prop = prop;
+        }
+        get value() {
+            return `#${this.object[this.prop].getHexString()}`;
+        }
+        set value(hexString) {
+            this.object[this.prop].set(hexString);
+        }
+    }
+
+    {
+        const color = 0xFFFFFF;
+        const intensity = 1;
+        // const light = new THREE.AmbientLight(color, intensity);
+        const directionalLight = new THREE.DirectionalLight( color, intensity );
+        scene.add(directionalLight);
+
+        const gui = new dat.GUI();
+        gui.addColor(new ColorGUIHelper(directionalLight, 'color'), 'value').name('color');
+        gui.add(directionalLight, 'intensity', 0, 2, 0.01);
+    }
+}
+
+// init lists for cheap storage for access later
 var pairList = []; 
 var objects = []; // list of all loaded objects in the scene
 var lmlem = []; // list of li elements for the sidebar
 
+// init our loaders so that we can load both JSON and glb files
 const gltfLoader = new GLTFLoader();
 const jsonLoader = new THREE.ObjectLoader();
 
+// init controls
+// left is commented out because we are not using the panning controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.mouseButtons = {
@@ -33,21 +115,27 @@ controls.mouseButtons = {
 }
 controls.enablePan = false;
 
+// show the center sphere at (0,0,0)
 loadSpheres();
 
+// init the rotation object so that it can be stored for later
 var rot = {
     'x': 0,
     'y': 0,
     'z': 0
 }
 
+// the actual sphere
 var dot;
 
+// boolean for typing so that we know when the user is typing or not
 let isTyping = false;
 
+// sidebar and main page from html file
 const sideb = document.getElementById("sideboi");
 const mainpage = document.getElementById("main");
 
+// get references to buttons on the page
 const openButton = document.getElementById("openBtn");
 openButton.addEventListener("click", function() {
     sideb.style.width = "250px";
@@ -81,15 +169,19 @@ backButton.addEventListener("click", function () {
     window.location.href = "index.html";
 });
 
+// reference for editable text on sidebar
 var editText = document.getElementById("nameID");
 
+// where the actual model is stored
 var model;
 
 // since we passed in parameter for model name, now we extract the name and load it
 // im using an array just in case we want to add more parameters later
 var queryString = new Array();
 
+// when page is fully loaded:
 window.onload = function (){
+    // find parameters passed to this page
     if (queryString.length == 0){
         if (window.location.search.split('?').length > 1) {
             var params = window.location.search.split('?')[1].split('&');
@@ -136,6 +228,7 @@ window.onload = function (){
         const fileObtained = sessionStorage.getItem("json");
         if(fileObtained) {
             console.log(fileObtained);
+            // get blob from file
             const bytes = new TextEncoder().encode(fileObtained);
             const blob = new Blob([bytes], { type: "application/json" });
             const newURL = URL.createObjectURL(blob);
@@ -147,6 +240,7 @@ window.onload = function (){
 }
 
 function loadModel(filepath){
+    // loads the json file in
     jsonLoader.load(filepath, (jsonModel) => {
         model = jsonModel;
         scene.add(model);
@@ -182,6 +276,7 @@ function finalizeLoad(model){
 }
 
 function loadSpheres(){
+    // load the center sphere in
     dot = new THREE.Mesh( new THREE.SphereGeometry(), new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
     dot.position.x = 0;
     dot.position.y = 0;
@@ -194,37 +289,10 @@ function loadSpheres(){
     scene.add( dot );
 }
 
-const color = 0xEBDCC7;
-const castColor = 0xEBDCC7;
-
-const directionalLight = new THREE.DirectionalLight( color, 3 ); // 0xFAEBD7, 0x404040 20
-
-var light2 = directionalLight.clone();
-directionalLight.castShadow = true;
-light2.castShadow = false;
-directionalLight.intensity = 3;
-light2.intensity = 0.5;
-
-scene.add( directionalLight );
-
-const bottomLight = new THREE.DirectionalLight( color, 1 );
-bottomLight.position.set(0, -10, 0);
-scene.add(bottomLight);
-
-const leftLight = new THREE.DirectionalLight( castColor, 1 );
-leftLight.position.set(-10, 0, 0);
-scene.add(leftLight);
-
-const rightLight = new THREE.DirectionalLight( castColor, 1 );
-rightLight.position.set(10, 0, 0);
-scene.add(rightLight);
-
-const frontLight = new THREE.DirectionalLight( color, 1 );
-frontLight.position.set(0, 0, 10);
-scene.add(frontLight);
-
+// set z position of camera
 camera.position.z = 5;
 
+// this is where key presses are handled
 function keyPressed(e){
     console.log("xd");
     if(!isTyping){
@@ -318,21 +386,26 @@ function keyPressed(e){
     }
 }
 
+// add click listener
 renderer.domElement.addEventListener('click', onDocumentMouseDown);
 
+// listens for key press to call keypress function
 window.addEventListener('keydown', keyPressed);
 
 // get the last clicked element
 function onDocumentMouseDown( event ) {
     isTyping = false;
 
+    // get mouse coordinates
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
+    // raycast from camera to find clicked element
     raycaster.setFromCamera(mouse, camera);
     
     var intersects;
 
+    // weird bug with the model being loaded in at a weird part in the array
     if(scene.children[6]){
         intersects = raycaster.intersectObjects(scene.children[6].children, true);
     }
@@ -340,6 +413,7 @@ function onDocumentMouseDown( event ) {
         intersects = raycaster.intersectObjects(scene.children, true);
     }
 
+    // check if anything was actually intersected
     if (intersects.length > 0) {
         console.log('clicked :o');
         model = intersects[0].object;
@@ -365,6 +439,7 @@ function onDocumentMouseDown( event ) {
     lmlem[findModelIndex(model)].style.fontWeight = "bold";
 }
 
+// if the selected object is close enough to the target, then return true
 function checkLocationRange( obj1, obj2, range ){
     if(obj1.position.x >= obj2.position.x - range && obj1.position.x <= obj2.position.x + range){
         if(obj1.position.y >= obj2.position.y - range && obj1.position.y <= obj2.position.y + range){
@@ -377,6 +452,7 @@ function checkLocationRange( obj1, obj2, range ){
     return false;
 }
 
+// goes through pairlist to see what the name of the clicked part of the model is
 function findModelName(model){
     for(let i = 0; i < pairList.length; i++){
         if(pairList.at(i).model === model){
@@ -386,6 +462,7 @@ function findModelName(model){
     return "No object found";
 }
 
+// finds the index of the loaded in parts
 function findModelIndex(model){
     for(let i = 0; i < objects.length; i++){
         if(objects.at(i) === model){
@@ -395,10 +472,12 @@ function findModelIndex(model){
     return -2;
 }
 
+// updates the name to show what is selected
 function updateObjName(model){
     editText.innerHTML = findModelName(model);
 }
 
+// resizes the canvas to match display size
 function resizeCanvasToDisplaySize() {
     const canvas = renderer.domElement;
     // look up the size the canvas is being displayed
@@ -416,6 +495,7 @@ function resizeCanvasToDisplaySize() {
     }
 }
 
+// a general index finder function
 function findIndex(arr, obj){
     for (var i = 0; i < arr.length; i++){
         if (arr[i] === obj){
@@ -426,6 +506,7 @@ function findIndex(arr, obj){
     console.log("failed to find index");
 }
 
+// animate function so that changes are applied
 const animate = function () {
     requestAnimationFrame( animate );
 
