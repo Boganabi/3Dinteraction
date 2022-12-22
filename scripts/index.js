@@ -102,8 +102,8 @@ function addNewModelCard(filename) {
 }
 
 // the models that this will use
-addNewModelCard("diamond");
 addNewModelCard("fancyskull");
+addNewModelCard("diamond");
 addNewModelCard("milw-ep2");
 
 // listen for keypress (not doing much at the moment, but might later)

@@ -210,8 +210,8 @@ window.onload = function (){
         })
         .then(function (response) {
             // handle success
-            console.log(response.data[idURL].filecall);
-            const newURL = "/" + response.data[idURL].filecall;
+            console.log(response.data[0].filecall);
+            const newURL = "/" + response.data[0].filecall;
             
             gltfLoader.load(newURL, (gltf) => {
                 model = gltf.scene;
