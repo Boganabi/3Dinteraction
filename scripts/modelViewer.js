@@ -21,7 +21,7 @@ document.body.appendChild( renderer.domElement );
 
 // set color of background
 const params = {
-    color: '#ffffff'
+    color: '#d3d3d3'
 }
 scene.background = new THREE.Color( params.color );
 const gui = new dat.GUI();
@@ -204,6 +204,9 @@ window.onload = function (){
         axios({
             method: 'get',
             url: 'http://localhost:8000/testdata',
+            params: {
+                id: idURL
+            }
         })
         .then(function (response) {
             // handle success

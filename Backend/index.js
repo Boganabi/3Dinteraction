@@ -45,8 +45,10 @@ pool.connect((err, client, release) => {
 })
 
 app.get('/testdata', (req, res, next) => {
+    const id = req.query["id"];
     console.log("TEST DATA :");
-    pool.query('Select * from test')
+    // pool.query('Select * from test')
+    pool.query('SELECT filecall FROM test WHERE id=' + id)
         .then(testData => {
             console.log(testData);
             res.send(testData.rows);
