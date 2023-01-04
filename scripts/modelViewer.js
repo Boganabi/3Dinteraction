@@ -1,23 +1,45 @@
 
 // import the modules listed below
 import * as THREE from '/scripts/node_modules/three';
-import { OrbitControls } from '/scripts/node_modules/three/examples/jsm/controls/OrbitControls'
+import { OrbitControls } from '/scripts/node_modules/three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from '/scripts/node_modules/three/examples/jsm/loaders/GLTFLoader';
-import { DragControls } from '/scripts/node_modules/three/examples/jsm/controls/DragControls'
+import { DragControls } from '/scripts/node_modules/three/examples/jsm/controls/DragControls';
+import { EffectComposer } from '/scripts/node_modules/three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from '/scripts/node_modules/three/examples/jsm/postprocessing/RenderPass.js';
+import { OutlinePass } from '/scripts/node_modules/three/examples/jsm/postprocessing/OutlinePass.js';
 
 // create scene and camera
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-
-//initialize raycaster (for click detecting) and mouse coordinates
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
 
 // create renderer and define size of 3d viewer
 const renderer = new THREE.WebGLRenderer();
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize( window.innerWidth, window.innerHeight - 72 ); // 72 being the height of the top bar
 document.body.appendChild( renderer.domElement );
+
+// init the highlighter and renderers to support it
+const composer = new EffectComposer(renderer);
+
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+const outline = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+
+outline.edgeStrength = 3;
+outline.edgeGlow = 0;
+outline.edgeThickness = 10000000;
+outline.pulsePeriod = 0;
+outline.rotate = false;
+outline.usePatternTexture = true;
+// outline.visibleEdgeColor = '#ffffff';
+// outline.hiddenEdgeColor = '#190a05';
+
+composer.addPass(outline);
+
+// initialize raycaster (for click detecting) and mouse coordinates
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
 // set color of background
 const params = {
@@ -269,9 +291,14 @@ function finalizeLoad(model){
         let li = document.createElement("li");
         li.setAttribute("contenteditable", true);
         li.innerText = item.name;
-        li.addEventListener("click", function () { isTyping = true; });
         listElements.appendChild(li);
         lmlem.push(li);
+        li.addEventListener("click", function () { 
+            isTyping = true;
+            model = objects[findIndex(lmlem, li)];
+            outline.selectedObjects = [];
+            outline.selectedObjects.push(model);
+        });
         li.addEventListener("input", function () { 
             pairList[findIndex(lmlem, li)].name = li.innerText; 
         })
@@ -435,11 +462,16 @@ function onDocumentMouseDown( event ) {
         element.style.fontWeight = "normal";
     });
 
+    // postprocessing
     console.log(model.children.length);
     console.log(lmlem[findModelIndex(model)]);
     console.log(model);
     // make text bold when object is selected
     lmlem[findModelIndex(model)].style.fontWeight = "bold";
+
+    outline.selectedObjects = [];
+    outline.selectedObjects.push(model);
+
 }
 
 // if the selected object is close enough to the target, then return true
@@ -522,6 +554,7 @@ const animate = function () {
     }
 
     renderer.render( scene, camera );
+    composer.render();
 };
 
 animate();
